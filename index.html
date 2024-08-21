@@ -31,9 +31,33 @@
         opacity: 0;
         transform: scale(0.9);
       }
+
+      #fireworks-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      @keyframes fadeOut {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .fade-out {
+        animation: fadeOut 2s forwards;
+      }
     </style>
   </head>
-  <body class="flex items-center justify-center h-screen">
+  <body class="flex items-center justify-center h-screen relative">
+    <div id="fireworks-container"></div>
     <div class="text-center text-white">
       <div id="timer" class="text-6xl">
         <span id="hours" class="digit mx-2">00</span>
@@ -42,10 +66,21 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
+
     <script>
       function parseTimeFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const timeParam = urlParams.get("time");
+        const debug = urlParams.get("debug") === "true";
+
+        if (debug) {
+          const now = new Date();
+          const debugTime = new Date(
+            now.getTime() - (24 * 3600 * 1000 - 5 * 1000)
+          );
+          return debugTime;
+        }
 
         if (timeParam) {
           return new Date(timeParam);
@@ -60,8 +95,69 @@
           setTimeout(() => {
             element.textContent = value;
             element.classList.remove("digit-animate");
-          }, 125); // Zeit für die Animation
+          }, 125);
         }
+      }
+
+      function showFirework() {
+        const container = document.getElementById("fireworks-container");
+
+        const fireworks = new Fireworks.default(container, {
+          autoresize: true,
+          opacity: 0.5,
+          acceleration: 1,
+          friction: 0.97,
+          gravity: 1.5,
+          particles: 30,
+          traceLength: 3,
+          traceSpeed: 10,
+          explosion: 5,
+          intensity: 20,
+          flickering: 30,
+          lineStyle: "round",
+          hue: {
+            min: 300,
+            max: 360,
+          },
+          delay: {
+            min: 30,
+            max: 60,
+          },
+          rocketsPoint: {
+            min: 50,
+            max: 50,
+          },
+          lineWidth: {
+            explosion: {
+              min: 1,
+              max: 2,
+            },
+            trace: {
+              min: 1,
+              max: 2,
+            },
+          },
+          brightness: {
+            min: 50,
+            max: 80,
+          },
+          decay: {
+            min: 0.015,
+            max: 0.03,
+          },
+          mouse: {
+            click: false,
+            move: false,
+            max: 1,
+          },
+        });
+
+        fireworks.start();
+
+        setTimeout(() => {
+          fireworks.stop();
+          container.classList.add("fade-out");
+        }, 10000);
       }
 
       function startTimer(startTime) {
@@ -69,18 +165,21 @@
           const currentTime = new Date();
           const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
 
-          const hrs = String(Math.floor(elapsedSeconds / 3600)).padStart(
-            2,
-            "0"
-          );
-          const mins = String(
-            Math.floor((elapsedSeconds % 3600) / 60)
-          ).padStart(2, "0");
-          const secs = String(elapsedSeconds % 60).padStart(2, "0");
+          const hrs = Math.floor(elapsedSeconds / 3600);
+          const mins = Math.floor((elapsedSeconds % 3600) / 60);
+          const secs = elapsedSeconds % 60;
 
-          updateDigit(document.getElementById("hours"), hrs);
-          updateDigit(document.getElementById("minutes"), mins);
-          updateDigit(document.getElementById("seconds"), secs);
+          const formattedHrs = String(hrs).padStart(2, "0");
+          const formattedMins = String(mins).padStart(2, "0");
+          const formattedSecs = String(secs).padStart(2, "0");
+
+          updateDigit(document.getElementById("hours"), formattedHrs);
+          updateDigit(document.getElementById("minutes"), formattedMins);
+          updateDigit(document.getElementById("seconds"), formattedSecs);
+
+          if (hrs === 24 || hrs === 48 || hrs === 100 || hrs === 150) {
+            showFirework();
+          }
         }, 1000);
       }
 
