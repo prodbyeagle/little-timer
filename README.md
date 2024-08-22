@@ -19,7 +19,7 @@ If you want to test the milestone animation, you can set the timer to start just
 **Example:**
 
 ```
-https://prodbyeagle.github.io/little-timer/?time=2024-08-16T23:59:56Z&debug=true
+https://prodbyeagle.github.io/little-timer/?time=2024-08-15T12:00:00Z&debug=true
 ```
 
 This will set the timer to 4 seconds before 24 hours and enable the debug mode, allowing you to see the milestone animation.
